@@ -1,0 +1,164 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Tic Tac Toe</title>
+  </head>
+  <body
+    class="flex items-center justify-center h-screen bg-gray-800 text-white"
+  >
+    <div class="text-center">
+      <h1 class="text-3xl mb-4">Tic Tac Toe</h1>
+      <div id="board" class="grid grid-cols-3 gap-2 bg-green-500 p-2">
+        <!-- Cell will be generate here -->
+      </div>
+      <button
+        id="reset"
+        class="mt-4 px-4 py-2 bg-green-500 text-white rounded text-2xl"
+      >
+        Reset
+      </button>
+      <p id="status" class="mt-2 text-2xl"></p>
+    </div>
+    <script>
+      const board = document.getElementById("board");
+      const statusDisplay = document.getElementById("status");
+      const resetButton = document.getElementById("reset");
+      let gameActive = true;
+      let gameState = ["", "", "", "", "", "", "", "", ""];
+      let currentPlayer = "";
+      
+
+      const winningConditions = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6],
+      ];
+
+      function createBoard() {
+        for (let i = 0; i < 9; i++) {
+          const cell = document.createElement("div");
+          cell.classList.add(
+            "cell",
+            "flex",
+            "items-center",
+            "justify-center",
+            "w-24",
+            "h-24",
+            "bg-gray-800",
+            "cursor-pointer",
+            "text-4xl",
+            "text-white"
+          );
+          cell.setAttribute("data-cell-index", i);
+          cell.addEventListener("click", handleCellClick);
+          board.appendChild(cell);
+        }
+      }
+      function initializeGame() {
+        currentPlayer = Math.random() < 0.5 ? "X" : "O";
+        updateStatusDisplay();
+        if (currentPlayer === "O") {
+          setTimeout(computerMove, 500);
+        }
+      }
+      function updateStatusDisplay() {
+        if (currentPlayer === "X") {
+          statusDisplay.textContent = "It's your turn";
+        } else {
+          statusDisplay.textContent = "It's the computer's turn";
+        }
+      }
+
+      function handleCellClick(event) {
+        const clickedCell = event.target;
+        const clickedCellIndex = parseInt(
+          clickedCell.getAttribute("data-cell-index")
+        );
+       
+        if (gameState[clickedCellIndex] !== "" || !gameActive) {
+          return;
+        }
+        gameState[clickedCellIndex] = currentPlayer;
+        clickedCell.textContent = currentPlayer;
+        checkResult();
+        if (gameActive) {
+        currentPlayer = "O"; 
+        updateStatusDisplay(); 
+        setTimeout(() => {
+            computerMove();
+        }, 500); 
+    }
+      }
+
+      function computerMove() {
+        let availableCells = gameState
+          .map((cell, index) => (cell === "" ? index : null))
+          .filter((index) => index !== null);
+        const randomIndex =
+          availableCells[Math.floor(Math.random() * availableCells.length)];
+        gameState[randomIndex] = currentPlayer;
+        document.querySelector(
+          `[data-cell-index ='${randomIndex}']`
+        ).textContent = currentPlayer;
+        checkResult();
+        if (gameActive) {
+        currentPlayer = "X"; 
+        updateStatusDisplay(); 
+        }
+      }
+      function checkResult() {
+        let roundWon = false;
+
+        for (let i = 0; i < winningConditions.length; i++) {
+          const [a, b, c] = winningConditions[i];
+          if (
+            gameState[a] === "" ||
+            gameState[b] === "" ||
+            gameState[c] === ""
+          ) {
+            continue;
+          }
+          if (gameState[a] === gameState[b] && gameState[a] === gameState[c]) {
+            roundWon = true;
+            break;
+          }
+        }
+        if (roundWon) {
+          if (currentPlayer === "X") {
+            statusDisplay.textContent = "You Won!";
+          } else {
+            statusDisplay.textContent = "Aww...You Lost!";
+          }
+          gameActive = false;
+          return;
+        }
+        if (!gameState.includes("")) {
+          statusDisplay.textContent = "It's a tie!";
+          gameActive = false;
+          return;
+        }
+        updateStatusDisplay();
+      }
+
+      resetButton.addEventListener("click", resetGame);
+
+      function resetGame() {
+        gameActive = true;
+        gameState = ["", "", "", "", "", "", "", "", ""];
+        initializeGame();
+        document.querySelectorAll(".cell").forEach((cell) => {
+          cell.textContent = "";
+        });
+      }
+      createBoard();
+      initializeGame();
+    </script>
+  </body>
+</html>
